@@ -1,0 +1,23 @@
+services:
+  api:
+    build: ./backend
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+      - MONGO_URL=mongodb://db:27017/libreflix
+    depends_on:
+      - db
+    volumes:
+      - .:/app
+
+  db:
+    image: mongo:6
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+
+volumes:
+  mongodb_data:

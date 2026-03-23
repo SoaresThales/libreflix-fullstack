@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LibreFlix | Open Source Cinema</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <nav class="top-bar">
+        <a href="#">
+            <img src="logo.jpg" alt="Logo LibreFlix" class="logo">
+        </a>
+        <ul class="nav-links">
+            <li><a href="#">Home</a></li>
+            <li><a href="#">Classics</a></li>
+            <li><a href="#">Sci-Fi</a></li>
+        </ul>
+        <input type="text" id="search-box" class="search-box" placeholder="Search titles...">
+    </nav>
+
+    <header class="hero" id="featured-movie">
+        <div class="hero-content">
+            <h2 class="movie-title" id="featured-title">Carregando...</h2>
+            <p class="movie-plot" id="featured-plot">Aguardando o banco de dados...</p>
+            <div class="hero-buttons">
+                <button class="play-btn" id="hero-play-btn">▶ Play</button>
+                <button class="info-btn" id="more-info-btn">More Info</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="catalog">
+        
+        <section class="movie-row hidden" id="search-section">
+            <h3 class="row-title" style="color: #00a8e1;">Search Results</h3>            
+            <div class="slider" id="search-slider">                
+            </div>           
+        </section>
+
+        <section class="movie-row">
+            <h3 class="row-title">All Movies</h3>
+            <div class="slider" id="all-movies-slider"></div>
+        </section>
+
+        <section class="movie-row">
+            <h3 class="row-title">Classic Animation</h3>            
+            <div class="slider" id="animation-slider">                
+            </div>           
+        </section>
+
+        <section class="movie-row">
+            <h3 class="row-title">Sci-fi & Cult</h3>            
+            <div class="slider" id="scifi-slider">
+            </div>
+        </section>
+            
+        <section class="movie-row">
+            <h3 class="row-title">Horror Classics</h3>            
+            <div class="slider" id="horror-slider"></div>           
+        </section>
+        
+    </main>
+
+    <div id="movie-modal" class="modal hidden">
+        
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal()">&times;</span>
+            
+            <img id="modal-backdrop" src="" alt="Capa do Filme">
+            
+            <iframe id="modal-video" src="" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen class="hidden"></iframe>
+            
+            <div id="modal-info-box" class="modal-info">
+                <h2 id="modal-title" class="movie-title">Título do Filme</h2>
+                <p id="modal-plot" class="movie-plot">Sinopse do filme vai aqui...</p>
+                
+                <div class="modal-actions">
+                    <button id="modal-play-btn" class="play-btn">▶ Play</button>
+                    <button class="action-btn" title="Gostei">👍</button>
+                    <button class="action-btn" title="Não Gostei">👎</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
