@@ -1,4 +1,14 @@
 services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.nginx
+    ports:
+      - "8080:80"
+    depends_on:
+      - api
+    volumes:
+      - ./frontend:/usr/share/nginx/html
   api:
     build: ./backend
     ports:
@@ -10,7 +20,8 @@ services:
     depends_on:
       - db
     volumes:
-      - .:/app
+      - ./backend:/app
+      - /app/node_modules
 
   db:
     image: mongo:6

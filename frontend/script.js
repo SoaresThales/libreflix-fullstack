@@ -6,13 +6,16 @@ let movies = []; //nasce vazio e espera o back-end
 
 async function loadMoviesFromAPI() {
     try {
-        let response = await fetch('http://localhost:3000/api/movies');  // O Front-end faz o pedido para a URL      
+        let response = await fetch('/api/movies');  // O Front-end faz o pedido para a URL através do proxy Nginx
         movies = await response.json(); // Traduz o JSON de volta
         console.log("✅ Sucesso! O Front-end puxou os filmes do Node.js!", movies);
         loadFeaturedMovie();
         loadCatalog();
     } catch (error) {        
         console.error("❌ Erro ao conectar no servidor:", error); // Se o servidor estiver desligado, ele avisa aqui
+    } finally {
+        const preloader = document.getElementById('preloader');
+        if (preloader) preloader.classList.add('fade-out');
     }
 }
 
@@ -39,21 +42,19 @@ function loadFeaturedMovie() {
     titleElement.textContent = featuredMovie.title;
     plotElement.textContent = featuredMovie.plot;
 
-    heroSection.style.backgroundImage = "url('" + featuredMovie.poster + "')";
+    heroSection.style.backgroundImage = "url('" + featuredMovie.backdrop + "')";
 
     let infoBtn = document.getElementById('more-info-btn');    
     infoBtn.onclick = function() {
-        openModal(featuredMovie.id);
+        openModal(featuredMovie._id);
     };
 
     let heroPlayBtn = document.getElementById('hero-play-btn');
     
     heroPlayBtn.onclick = function() {
-        openModal(featuredMovie.id);
-        document.getElementById('modal-play-btn').click(); 
+        openModal(featuredMovie._id, true); // Passa 'true' para tocar direto
     };
 }
-loadFeaturedMovie();
 
 // ==============================
 // CAROUSEL
@@ -77,7 +78,12 @@ function loadCatalog() {
         if (!targetSlider) return; // Segurança: se a prateleira não existir no HTML, não faz nada
         
         for (let i = 0; i < movieList.length; i++) {
-            let posterHtml = "<img src='" + movieList[i].poster + "' alt='" + movieList[i].title + "' class='movie-poster' onclick='openModal(" + movieList[i].id + ")'>";
+            const movie = movieList[i];
+            let posterHtml = `
+                <img src="${movie.poster}" 
+                     alt="${movie.title}" 
+                     class="movie-poster" 
+                     onclick="openModal('${movie._id}')">`;
             targetSlider.innerHTML += posterHtml;
         }
     }
@@ -104,9 +110,9 @@ function loadCatalog() {
 // MODAL (JANELA FLUTUANTE)
 // ==============================
 
-function openModal(idDoFilmeClicado) {
+function openModal(idDoFilmeClicado, autoPlayVideo = false) {
     let movieDetails = movies.find(function(movie) {
-        return movie.id === idDoFilmeClicado; 
+        return movie._id === idDoFilmeClicado; 
     });
 
     let modal = document.getElementById('movie-modal');
@@ -117,17 +123,46 @@ function openModal(idDoFilmeClicado) {
     let playBtn = document.getElementById('modal-play-btn');
     let modalInfoBox = document.getElementById('modal-info-box');
 
+    // 1. Limpeza e Formatação Robusta da URL
+    let videoUrl = movieDetails.trailer || "";
+    
+    // Converte links normais do YT e links curtos (youtu.be) para EMBED
+    if (videoUrl.includes("watch?v=")) {
+        videoUrl = videoUrl.replace("watch?v=", "embed/");
+    } else if (videoUrl.includes("youtu.be/")) {
+        let videoId = videoUrl.split("youtu.be/")[1].split("?")[0];
+        videoUrl = "https://www.youtube.com/embed/" + videoId;
+    }
+
     modalTitle.textContent = movieDetails.title;
     modalPlot.textContent = movieDetails.plot;
-    modalBackdrop.src = movieDetails.poster;
+    modalBackdrop.src = movieDetails.backdrop || movieDetails.poster;
 
-    playBtn.onclick = function() {
+    // Se não houver vídeo, desabilita visualmente o botão de play do modal
+    if (!videoUrl) {
+        playBtn.style.display = "none";
+    } else {
+        playBtn.style.display = "block";
+    }
+
+    const startVideo = function() {
+        if (!videoUrl) return; // Segurança extra
         modalBackdrop.classList.add('hidden'); 
         modalInfoBox.classList.add('hidden'); 
         modalVideo.classList.remove('hidden'); 
-        modalVideo.src = movieDetails.trailer + "?autoplay=1"; 
+        
+        // Correção Inception: Só atribui o SRC se for uma URL válida para evitar carregar a raiz do site
+        if (videoUrl.startsWith('http')) {
+            modalVideo.src = videoUrl + (videoUrl.includes("?") ? "&" : "?") + "autoplay=1&mute=1"; 
+        }
     };
+
+    playBtn.onclick = startVideo;
     modal.classList.remove('hidden');
+
+    if (autoPlayVideo) {
+        startVideo();
+    }
 }
 
 function closeModal() {
@@ -174,7 +209,12 @@ searchBox.addEventListener('input', function() {
         });
         
         for (let i = 0; i < results.length; i++) {
-            let posterHtml = "<img src='" + results[i].poster + "' alt='" + results[i].title + "' class='movie-poster' onclick='openModal(" + results[i].id + ")'>";
+            const movie = results[i];
+            let posterHtml = `
+                <img src="${movie.poster}" 
+                     alt="${movie.title}" 
+                     class="movie-poster" 
+                     onclick="openModal('${movie._id}')">`;
             searchSlider.innerHTML += posterHtml;
         }
     }
